@@ -122,6 +122,7 @@ bt.loadScript = function(src) {
 }
 bt.merge = function(obj1, obj2) {
 	// it basicly merge two object together
+	// put every thing in obj2 into obj1
 	for (var i in obj2)
 		obj1[i] = obj2[i];
 }
@@ -130,6 +131,24 @@ bt.asc = function ( string ) {
 }
 bt.chr = function ( asciiNum ) {
 	return String.fromCharCode(AsciiNum);
+}
+// added for a more convinent way to write code
+bt.class = function(parent, child) {
+	if (arguments.length == 2) {
+		// when provided parent and child
+		// so we identify it as "extending"
+		var ctor = child.constuctor;child.constuctor = null; // clear the constructor of the child
+		bt.inherits(parent, ctor);
+		//bt.log(child)
+		bt.merge(ctor.prototype,child);
+	} else {	
+		// when only one argumentc
+		// we identify it as "creating a class"
+		child = arguments[0];
+		var ctor = child.constructor;child.constuctor = null; // clear the constructor of the child
+		bt.merge(ctor.prototype,child);
+	}
+	return ctor;
 }
 // This AssetManager will only add image to the list and will NOT remove from the list
 /* please use the load method beside of this
@@ -314,8 +333,6 @@ bt.AssetManager.prototype.get = function(path) {
 	return this.cache[path];
 }
 
-// include external b1g7ank lib - the rendering part of the engine
-
 //********************************************************************************************************
 //
 // big tank engine classes
@@ -395,22 +412,39 @@ bt.Timer.reset = function() {
 bt.system = bt.system || {};
 // to kick the system start running
 bt.system.init = function(options) {
+	
+	// options
+	/*
+	 width: number
+	 height: number
+	 
+	 element: htmlElement ** the element where we place the game **
+	 
+	 debug: true
+	 useMouse: true
+	 useTouch: false ** to be implemented **
+	 useKeyboard: true
+	 
+	 assetManager: new bt.AssetManager()
+	 game: new bt.game()
+	 
+	 */
+	
 	// timing stuffs
 	bt.system.clock  = this.clock || new bt.Clock();
 	bt.system.delta  = 0;
 	bt.system.isRunning = false;
 	
+	// debug
 	bt.system.debug = false;
 	
 	// assets
 	bt.system.assets = new bt.AssetManager();
 	
-}
-bt.system.setGame = function(game, width, height) {
-	bt.game = new game(width, height);
-}
-bt.system.appendGame = function(elmId) {
-	document.getElementById(elmId).appendChild(bt.game.canvas);
+	// game
+	if (options.game)
+		bt.system.game = game
+	else bt.system.game = new bt.Game(options.width, options.height)
 }
 bt.system.start =  function() {
 	var that = this;
@@ -432,7 +466,11 @@ bt.system.update = function(val) {
 bt.system.stop = function() {
 	this.isRunning = false;
 };
-
+/*
+ Class:       bt.Game
+ extend:      none
+ Description: the main frame of the game, which would run by the bt.system
+ */
 bt.Game = function(width, height) {
 	// the basic object
 	this.canvas = document.createElement("canvas");
@@ -448,8 +486,16 @@ bt.Game = function(width, height) {
 	this.width = width || 640;
 	this.height = height || 360;
 }
-bt.Game.prototype.init = function() {
+bt.Game.prototype.initialize = function() {
 	// need to be implement 
+	this.updateTime = 0;
+	this.renderTime = 0;
+	this.entities = [];
+
+	this.canvas.width = width || bt.DEFAULT.GAME_WIDTH;
+	this.canvas.height = height || bt.DEFAULT.GAME_HEIGHT;
+	this.width = width || 640;
+	this.height = height || 360;
 }
 bt.Game.prototype.swapIndex = function(obj1, obj2) {
 	var index1 = this.entities.indexOf(obj1);
@@ -538,6 +584,10 @@ bt.Input.prototype.useMouse = function() {
 	bt.game.canvas.addEventListener("mousemove", this.mouseMoveHandler.bind(this), false);
 	bt.game.canvas.addEventListener("contextmenu", this.contextMenuHandler.bind(this), false);
 }
+// to be implemented
+bt.Input.prototype.useTouch = function () {
+	
+}
 bt.Input.prototype.mouseDownHandler = function() {
 	e.stopPropagation();
 	e.preventDefault();
@@ -587,13 +637,14 @@ bt.Input.prototype.bind = function(key, action) {
 bt.Input.prototype.unbind = function(action) {
 	delete this.actions[action];
 }
+// make it global
 bt.input = new bt.Input();
 
 
 /*
  Class:       bt.Entity
  extend:      none
- Description: Objects of the game, can be added to the screen by the bt.Game class
+ Description: Objects of the game, controlled by the bt.Game class
  */
 bt.Entity = function(x,y) {
 	
@@ -613,7 +664,7 @@ bt.Entity = function(x,y) {
 	this.drawable = new bt.Drawable();
 }
 bt.Entity.prototype.initialize = function () {
-	// this function will be called after constructed
+// this function will be called after constructed
 }
 bt.Entity.prototype.spawn = function() {
 	// this funciton will be called when it spawns
