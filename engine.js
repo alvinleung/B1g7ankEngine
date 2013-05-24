@@ -11,7 +11,7 @@ var bt = bt || {};
  This is  a abstract of the platform which other classes will use
  */
  
-// VERY CORE FUNCTION OF THE GAME ENGINE, WHICH CONTAIN THE DOM/ GL/ MOBILE WARPPER
+// VERY CORE FUNCTION OF THE GAME ENGINE
 bt.game = null;
 
 /*
@@ -25,7 +25,8 @@ bt.game = null;
 	   bt.inherits ( child, parent );
 	   bt.parent   (); // no arguments for calling the parent constructor
 	   bt.parent   (this, "methodname", ["arg1", "arg2"]);
-	   
+	   bt.class(class)
+	   bt.class(parent, child)
 	   bt.merge ( obj1, obj2 );
  */
 if (!Array.prototype.indexOf) {
@@ -405,9 +406,9 @@ bt.Timer.reset = function() {
 	this.startTime = Date.now();
 }
 /*
- Class:       bt.Game
+ Class:       bt.system.****
  extend:      none
- Description: the main Loop of the game
+ Description: A static class of the system, the game initialization starts here
  */
 bt.system = bt.system || {};
 // to kick the system start running
@@ -429,22 +430,56 @@ bt.system.init = function(options) {
 	 game: new bt.game()
 	 
 	 */
-	
+
+	if (!options) 
+		console.warn("bt.system.init: No arguments provided for initialization, please check if you have provide any arguments");
+
+	var settings = {
+
+		// the element where we place the game
+		element: document.createElement("div"),
+
+		// debug mode
+		debug: false,
+
+		//assets
+		assetManager: new bt.AssetManager(),
+		// game
+		game: bt.Game,
+		
+		// using inputs
+		useMouse: true,
+		useKeyboard: true,
+		useTouch: false
+
+	}
+	bt.merge(settings, options)
+
 	// timing stuffs
 	bt.system.clock  = this.clock || new bt.Clock();
 	bt.system.delta  = 0;
 	bt.system.isRunning = false;
 	
 	// debug
-	bt.system.debug = false;
+	bt.system.debug = settings.debug;
+
+	// using inputs
+
 	
-	// assets
-	bt.system.assets = new bt.AssetManager();
-	
-	// game
-	if (options.game)
-		bt.system.game = game
-	else bt.system.game = new bt.Game(options.width, options.height)
+	// global access objects
+	bt.system.assets = settings.assetManager;
+	bt.input = new bt.Input(); // make bt input global
+	bt.game = new settings.game(options.width || bt.DEFAULT.GAME_WIDTH, options.height || bt.DEFAULT.GAME_HEIGHT );
+
+	// append the game element
+	if (!options.element)
+		console.warn("bt.system.init: No game element provided");
+	else {
+		if ( typeof options.element == "string") // the argument is an id
+			document.getElementById(options.element).appendChild(bt.game.canvas);
+		else
+			element.appendChild(bt.game.canvas);
+	}
 }
 bt.system.start =  function() {
 	var that = this;
@@ -565,7 +600,8 @@ bt.Game.prototype.logRenderTime = function() {
 /*
  Class:       bt.Input
  extend:      none
- Description: to handle input from the client
+ Description: to handle input from the client 
+ NOTE ** bt.input is initialized BEFORE initializing the game 
  */
 bt.Input = function() {
 	this.actions = {};
@@ -637,8 +673,7 @@ bt.Input.prototype.bind = function(key, action) {
 bt.Input.prototype.unbind = function(action) {
 	delete this.actions[action];
 }
-// make it global
-bt.input = new bt.Input();
+
 
 
 /*

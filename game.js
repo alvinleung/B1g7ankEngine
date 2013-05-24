@@ -1,12 +1,13 @@
 var img = "wieldassimage.png";
 window.onload = function() {
 
-	bt.system.init();
-	bt.system.setGame(SomeGame);
-	bt.system.appendGame("game");
-	
-	// turn on debug mode
-	bt.system.debug = true;
+	bt.system.init({
+
+		game: SomeGame,
+		element: "game",
+		debug: true
+
+	});
 	
 	// add images to the queue
 	bt.system.assets.add(img);
