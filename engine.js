@@ -1,4 +1,3 @@
-
 /*
  Author: Alvin Leung
  Email : alvinleung2009@gmail.com
@@ -612,6 +611,9 @@ bt.Entity = function(x,y) {
 		y : bt.DEFAULT.VELOCITY_Y
 	}
 	this.drawable = new bt.Drawable();
+}
+bt.Entity.prototype.initialize = function () {
+	// this function will be called after constructed
 }
 bt.Entity.prototype.spawn = function() {
 	// this funciton will be called when it spawns
