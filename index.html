@@ -2,8 +2,43 @@
 <html>
 <head>
 <title>B1g7ank Engine</title>
-<script type="text/javascript" src="engine.js"  charset="utf-8"></script>
-<script type="text/javascript" src="game.js"  charset="utf-8"></script>
+<script type="text/javascript" src="engine/system.js" charset="utf-8"></script>
+<script type="text/javascript" charset="utf-8">
+window.addEventListener("load",function() {
+	bt.system.init({
+
+		element: "game",
+		debug: true,
+
+		assets: {
+
+			images: {
+				wieldassimage: "wieldassimage.png"
+			}
+		},
+		// configuration file
+		config: "engine/config.js",
+		lib: ["engine/lib/pixi.js"],
+		scripts: [
+
+			// include utilities
+			"engine/utils/Util.js",
+			"engine/utils/Clock.js",
+			"engine/utils/Timer.js",
+
+			// include core functions
+			"engine/Game.js",
+
+			"engine/scene/SceneManager.js",
+			"engine/scene/Scene.js",
+			"engine/entities/Entity.js",
+			
+			// include the actual game files
+			"TheGame.js"
+		]
+	});
+});
+</script>
 </head>
 
 <body>
